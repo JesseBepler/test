@@ -6,6 +6,7 @@ let playerName = '';
 let playerSpawned = false;
 let isMachineGunActive = false;
 let mouseDirection = { dx: 0, dy: 0 };
+let winnerMessage = ''; // Store the winner message
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -30,6 +31,12 @@ socket.on('terrain', (terrainData) => {
 socket.on('powerUps', (powerUpData) => {
   powerUps = powerUpData;
   console.log("Received power-ups data:", powerUps); // Debug to confirm power-up reception
+});
+
+// Listen for winner announcement from server
+socket.on('showWinner', (winnerName) => {
+  winnerMessage = `${winnerName.toUpperCase()} WON!!!`; // Set winner message
+  setTimeout(() => { winnerMessage = ''; }, 5000); // Clear after 5 seconds
 });
 
 // Handle name input and spawn player
@@ -71,7 +78,7 @@ function drawPowerUps() {
   });
 }
 
-// Draw players and projectiles
+// Draw players, projectiles, and winner message
 function drawPlayers() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -91,6 +98,14 @@ function drawPlayers() {
     ctx.fillStyle = 'black';
     ctx.fill();
   });
+
+  // Draw winner message if exists
+  if (winnerMessage) {
+    ctx.font = 'bold 80px Arial';
+    ctx.fillStyle = 'green';
+    ctx.textAlign = 'center';
+    ctx.fillText(winnerMessage, canvas.width / 2, canvas.height / 2);
+  }
 }
 
 // Update the scoreboard with player names and scores

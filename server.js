@@ -61,10 +61,10 @@ function spawnPowerUp() {
   if (gameState.powerUps.length >= maxPowerUps) return;
 
   const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
-  const { x, y } = getValidSpawnPosition();
+  const { x, y } = getValidSpawnPosition(); // Ensure the power-up spawns outside terrain
 
   gameState.powerUps.push({ type, x, y });
-  io.emit('powerUps', gameState.powerUps);
+  io.emit('powerUps', gameState.powerUps); // Send updated power-ups to clients
 }
 
 // Reset game state and generate new terrain
@@ -75,18 +75,19 @@ function resetGameState() {
     terrain: [],
     powerUps: []
   };
-  generateTerrain();
+  generateTerrain(); // Generate new terrain blocks
 }
 
 // Broadcast a winning message and reset the game
 function handleWin(winnerName) {
-  io.emit('showWinner', winnerName);
+  io.emit('showWinner', winnerName); // Send winner's name to clients
   console.log(`${winnerName} has won the game!`);
 
+  // Reset the game after 5 seconds
   setTimeout(() => {
     resetGameState();
-    io.emit('gameState', gameState);
-  }, 5000);
+    io.emit('gameState', gameState); // Send reset game state to all clients
+  }, 5000); // 5-second delay before reset
 }
 
 // Generate initial terrain when server starts
@@ -97,6 +98,7 @@ app.use(express.static(path.join(__dirname, '/')));
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
+  // Send terrain and power-up data to the connected client
   socket.emit('terrain', gameState.terrain);
   socket.emit('powerUps', gameState.powerUps);
 
@@ -173,23 +175,26 @@ io.on('connection', (socket) => {
     const player = gameState.players[playerId];
     if (!player) return;
 
+    // Loop through each power-up to check for collision with the player
     gameState.powerUps = gameState.powerUps.filter(powerUp => {
       const distance = Math.hypot(player.x + 10 - powerUp.x, player.y + 10 - powerUp.y);
-      const isColliding = distance < 20;
+      const isColliding = distance < 20; // Collision radius based on player and power-up size
 
       if (isColliding) {
+        // Apply power-up effect to the player
         if (powerUp.type === 'SPEED') {
-          player.speed = Math.min(player.speed * 2, 15); // Set max speed
+          player.speed = Math.min(player.speed * 2, 15); // Double speed, with a max cap
         } else if (powerUp.type === 'MACHINE GUN') {
-          player.fireRate = Math.max(player.fireRate / 2, 200); // Set min fire rate
+          player.fireRate = Math.max(player.fireRate / 2, 200); // Double fire rate, with a min cap
         }
-        io.emit('gameState', gameState); // Broadcast updated player state
+
+        io.emit('gameState', gameState); // Broadcast updated player state to clients
       }
 
       return !isColliding; // Remove power-up if it was picked up
     });
 
-    io.emit('powerUps', gameState.powerUps); // Broadcast updated power-ups
+    io.emit('powerUps', gameState.powerUps); // Broadcast updated power-ups to clients
   }
 
   setInterval(() => {
@@ -197,6 +202,7 @@ io.on('connection', (socket) => {
       projectile.x += projectile.dx;
       projectile.y += projectile.dy;
 
+      // Remove projectile if it goes out of bounds or collides with terrain
       if (
         projectile.x < 0 ||
         projectile.x > gameArea.width ||
@@ -245,7 +251,7 @@ io.on('connection', (socket) => {
 // Periodically spawn power-ups if below the maximum limit
 setInterval(() => {
   spawnPowerUp();
-}, 20000);
+}, 20000); // Adjust time interval as needed
 
 server.listen(3000, () => {
   console.log('Server is running on http://localhost:3000');
