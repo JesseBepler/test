@@ -1,67 +1,50 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const socket = io();
 
-// Define the two players with default positions and colors
-let players = {
-  blue: { x: 50, y: 50, size: 20, color: 'blue', claimedBy: null },
-  red: { x: 150, y: 150, size: 20, color: 'red', claimedBy: null }
+// Local reference to the game state
+let gameState = {
+  blue: { x: 50, y: 50, claimedBy: null },
+  red: { x: 150, y: 150, claimedBy: null }
 };
 
-// Simulate user IP (for demonstration purposes)
-let userIP = 'User-' + Math.floor(Math.random() * 1000);
-
-// Function to draw players
-function drawPlayers() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-  Object.values(players).forEach(player => {
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.size, player.size);
-  });
-}
+// Receive the initial game state from the server
+socket.on('gameState', (state) => {
+  gameState = state;
+  drawPlayers();
+});
 
 // Function to claim a character
 function claimCharacter(color) {
-  Object.keys(players).forEach(key => {
-    if (players[key].claimedBy === userIP) {
-      players[key].claimedBy = null; // Release previously claimed character
-    }
-  });
-  
-  // Claim the new character if it's not already claimed
-  if (players[color].claimedBy === null) {
-    players[color].claimedBy = userIP;
-    console.log(`${userIP} claimed ${color}`);
-  } else {
-    console.log(`${color} is already claimed by another user.`);
-  }
+  socket.emit('claimCharacter', { color, userId: socket.id });
 }
 
-// Listen for keyboard input and move the claimed character
+// Listen for key events to move a character
 window.addEventListener('keydown', (event) => {
-  Object.values(players).forEach(player => {
-    if (player.claimedBy === userIP) { // Only move claimed character
+  Object.entries(gameState.players).forEach(([color, player]) => {
+    if (player.claimedBy === socket.id) {
       switch (event.key) {
-        case 'ArrowUp':
-          player.y -= 5;
-          break;
-        case 'ArrowDown':
-          player.y += 5;
-          break;
-        case 'ArrowLeft':
-          player.x -= 5;
-          break;
-        case 'ArrowRight':
-          player.x += 5;
-          break;
+        case 'ArrowUp': player.y -= 5; break;
+        case 'ArrowDown': player.y += 5; break;
+        case 'ArrowLeft': player.x -= 5; break;
+        case 'ArrowRight': player.x += 5; break;
       }
+      socket.emit('move', { color, x: player.x, y: player.y });
     }
   });
 });
 
-// Game loop to continuously draw players
-function gameLoop() {
-  drawPlayers();
-  requestAnimationFrame(gameLoop); // Keep the loop going
+// Draw function to render the players
+function drawPlayers() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  Object.values(gameState.players).forEach(player => {
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, 20, 20);
+  });
 }
 
-gameLoop(); // Start the game loop
+// Game loop to update the drawing
+function gameLoop() {
+  drawPlayers();
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
