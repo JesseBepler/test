@@ -7,10 +7,26 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Color Selection Menu -->
-  <div id="color-selection" style="margin-bottom: 10px;">
+  <!-- Name Input -->
+  <div id="name-input-container" style="text-align: center; margin-top: 10px;">
+    <label for="player-name">NAME:</label>
+    <input type="text" id="player-name" maxlength="9" placeholder="Enter name">
+  </div>
+
+  <!-- Scoreboard -->
+  <div id="scoreboard" style="position: absolute; left: 20px; top: 60px; width: 120px;">
+    <h3>Scoreboard</h3>
+    <ul id="player-list" style="list-style-type: none; padding: 0;"></ul>
+  </div>
+
+  <!-- Game Canvas -->
+  <canvas id="gameCanvas" width="800" height="600" style="border:1px solid black;"></canvas>
+
+  <!-- Color Selection Menu in a Grid -->
+  <div id="color-selection" style="position: absolute; right: 20px; top: 60px;">
     <h3>Select Your Color:</h3>
-    <div id="color-buttons">
+    <div id="color-buttons" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;">
+      <button style="background-color: black;" onclick="selectColor('black')"></button>
       <button style="background-color: red;" onclick="selectColor('red')"></button>
       <button style="background-color: blue;" onclick="selectColor('blue')"></button>
       <button style="background-color: green;" onclick="selectColor('green')"></button>
@@ -22,13 +38,9 @@
       <button style="background-color: brown;" onclick="selectColor('brown')"></button>
       <button style="background-color: lime;" onclick="selectColor('lime')"></button>
       <button style="background-color: magenta;" onclick="selectColor('magenta')"></button>
-      <button style="background-color: teal;" onclick="selectColor('teal')"></button>
-      <button style="background-color: navy;" onclick="selectColor('navy')"></button>
     </div>
   </div>
 
-  <!-- Game Canvas -->
-  <canvas id="gameCanvas" width="800" height="600" style="border:1px solid black;"></canvas>
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>

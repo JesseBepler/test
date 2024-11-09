@@ -7,6 +7,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// List of available colors
+const colors = ['black', 'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'brown', 'lime', 'magenta'];
+
 // Persistent game state with no initial players
 let gameState = {
   players: {}
@@ -18,22 +21,25 @@ app.use(express.static(path.join(__dirname, '/')));
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
-  // Assign a new player with a random position and default color (black)
-  gameState.players[socket.id] = {
-    x: Math.floor(Math.random() * 780) + 10, // Random x within canvas (10px padding)
-    y: Math.floor(Math.random() * 580) + 10, // Random y within canvas (10px padding)
-    color: 'black' // Default color
-  };
+  // Handle player spawn with name and color
+  socket.on('spawnPlayer', ({ name, color }) => {
+    const randomX = Math.floor(Math.random() * 780) + 10;
+    const randomY = Math.floor(Math.random() * 580) + 10;
+    gameState.players[socket.id] = {
+      x: randomX,
+      y: randomY,
+      color: color || colors[Math.floor(Math.random() * colors.length)],
+      name
+    };
 
-  // Broadcast the updated game state to all clients
-  io.emit('gameState', gameState);
-  console.log('New player added:', gameState.players[socket.id]);
+    io.emit('gameState', gameState);
+    console.log(`Player ${name} spawned with color ${color}`);
+  });
 
   // Listen for a color selection from the player
   socket.on('colorSelected', ({ color }) => {
     if (gameState.players[socket.id]) {
       gameState.players[socket.id].color = color;
-      console.log(`Player ${socket.id} selected color: ${color}`);
       io.emit('gameState', gameState); // Broadcast updated game state
     }
   });
