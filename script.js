@@ -15,6 +15,7 @@ const ctx = canvas.getContext('2d');
 // Receive the initial game state from the server
 socket.on('gameState', (state) => {
   gameState = state;
+  console.log('Received gameState from server:', gameState); // Log the received game state
   drawPlayers();
 });
 
@@ -42,6 +43,7 @@ window.addEventListener('keydown', (event) => {
 function drawPlayers() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   Object.entries(gameState.players).forEach(([color, player]) => {
+    console.log(`Drawing ${color} player at`, player.x, player.y); // Log player positions
     ctx.fillStyle = color;
     ctx.fillRect(player.x, player.y, 20, 20); // Draw each player as a square
   });

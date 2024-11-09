@@ -22,11 +22,14 @@ app.use(express.static(path.join(__dirname, '/')));
 io.on('connection', (socket) => {
   console.log('A user connected');
 
-  // Send the current game state to the newly connected client
+  // Send the current game state to the newly connected client and log it
   socket.emit('gameState', gameState);
+  console.log('Sent initial gameState:', gameState);
 
   // Listen for a player claiming a character
   socket.on('claimCharacter', ({ color, userId }) => {
+    console.log(`User ${userId} attempting to claim ${color} character`);
+
     // Release any previously claimed character by this user
     Object.keys(gameState.players).forEach(player => {
       if (gameState.players[player].claimedBy === userId) {
@@ -37,6 +40,7 @@ io.on('connection', (socket) => {
     // Claim the character if it's not already claimed
     if (gameState.players[color].claimedBy === null) {
       gameState.players[color].claimedBy = userId;
+      console.log(`Character ${color} claimed by user ${userId}`);
       io.emit('gameState', gameState); // Broadcast updated game state
     }
   });
@@ -46,6 +50,7 @@ io.on('connection', (socket) => {
     if (gameState.players[color]) {
       gameState.players[color].x = x;
       gameState.players[color].y = y;
+      console.log(`Updated position of ${color} player to (${x}, ${y})`);
       io.emit('gameState', gameState); // Broadcast updated game state
     }
   });
