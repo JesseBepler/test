@@ -7,10 +7,24 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Claim Buttons -->
-  <div id="controls" style="margin-bottom: 10px;">
-    <button onclick="claimCharacter('blue')">Claim Blue</button>
-    <button onclick="claimCharacter('red')">Claim Red</button>
+  <!-- Color Selection Menu -->
+  <div id="color-selection" style="margin-bottom: 10px;">
+    <h3>Select Your Color:</h3>
+    <div id="color-buttons">
+      <button style="background-color: red;" onclick="selectColor('red')"></button>
+      <button style="background-color: blue;" onclick="selectColor('blue')"></button>
+      <button style="background-color: green;" onclick="selectColor('green')"></button>
+      <button style="background-color: yellow;" onclick="selectColor('yellow')"></button>
+      <button style="background-color: purple;" onclick="selectColor('purple')"></button>
+      <button style="background-color: orange;" onclick="selectColor('orange')"></button>
+      <button style="background-color: pink;" onclick="selectColor('pink')"></button>
+      <button style="background-color: cyan;" onclick="selectColor('cyan')"></button>
+      <button style="background-color: brown;" onclick="selectColor('brown')"></button>
+      <button style="background-color: lime;" onclick="selectColor('lime')"></button>
+      <button style="background-color: magenta;" onclick="selectColor('magenta')"></button>
+      <button style="background-color: teal;" onclick="selectColor('teal')"></button>
+      <button style="background-color: navy;" onclick="selectColor('navy')"></button>
+    </div>
   </div>
 
   <!-- Game Canvas -->
@@ -19,4 +33,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-

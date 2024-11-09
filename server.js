@@ -7,51 +7,51 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Persistent game state with initial positions
+// Persistent game state with no initial players
 let gameState = {
-  players: {
-    blue: { x: 50, y: 50, claimedBy: null },
-    red: { x: 150, y: 150, claimedBy: null }
-  }
+  players: {}
 };
 
 // Serve static files (e.g., index.html, script.js, style.css)
 app.use(express.static(path.join(__dirname, '/')));
 
 io.on('connection', (socket) => {
-  console.log('A user connected');
+  console.log('A user connected:', socket.id);
 
-  // Send the current game state to the newly connected client
-  socket.emit('gameState', gameState);
-  console.log('Sending initial gameState to client:', JSON.stringify(gameState));
+  // Assign a new player with a random position and default color (black)
+  gameState.players[socket.id] = {
+    x: Math.floor(Math.random() * 780) + 10, // Random x within canvas (10px padding)
+    y: Math.floor(Math.random() * 580) + 10, // Random y within canvas (10px padding)
+    color: 'black' // Default color
+  };
 
-  // Listen for a player claiming a character
-  socket.on('claimCharacter', ({ color, userId }) => {
-    console.log(`User ${userId} attempting to claim ${color} character`);
+  // Broadcast the updated game state to all clients
+  io.emit('gameState', gameState);
+  console.log('New player added:', gameState.players[socket.id]);
 
-    // Release any previously claimed character by this user
-    Object.keys(gameState.players).forEach(player => {
-      if (gameState.players[player].claimedBy === userId) {
-        gameState.players[player].claimedBy = null;
-      }
-    });
-
-    // Claim the character if it's not already claimed
-    if (gameState.players[color].claimedBy === null) {
-      gameState.players[color].claimedBy = userId;
-      console.log(`Character ${color} claimed by user ${userId}`);
+  // Listen for a color selection from the player
+  socket.on('colorSelected', ({ color }) => {
+    if (gameState.players[socket.id]) {
+      gameState.players[socket.id].color = color;
+      console.log(`Player ${socket.id} selected color: ${color}`);
       io.emit('gameState', gameState); // Broadcast updated game state
     }
   });
 
   // Listen for player movement
-  socket.on('move', ({ color, x, y }) => {
-    if (gameState.players[color]) {
-      gameState.players[color].x = x;
-      gameState.players[color].y = y;
-      console.log(`Updated position of ${color} player to (${x}, ${y})`);
+  socket.on('move', ({ x, y }) => {
+    if (gameState.players[socket.id]) {
+      gameState.players[socket.id].x = x;
+      gameState.players[socket.id].y = y;
       io.emit('gameState', gameState); // Broadcast updated game state
     }
+  });
+
+  // Handle client disconnection
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+    delete gameState.players[socket.id]; // Remove the player from game state
+    io.emit('gameState', gameState); // Broadcast updated game state
   });
 });
 
