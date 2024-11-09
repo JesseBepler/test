@@ -2,9 +2,15 @@ const socket = io();
 
 // Local reference to the game state
 let gameState = {
-  blue: { x: 50, y: 50, claimedBy: null },
-  red: { x: 150, y: 150, claimedBy: null }
+  players: {
+    blue: { x: 50, y: 50, claimedBy: null },
+    red: { x: 150, y: 150, claimedBy: null }
+  }
 };
+
+// Canvas setup
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
 // Receive the initial game state from the server
 socket.on('gameState', (state) => {
@@ -35,9 +41,9 @@ window.addEventListener('keydown', (event) => {
 // Draw function to render the players
 function drawPlayers() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  Object.values(gameState.players).forEach(player => {
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, 20, 20);
+  Object.entries(gameState.players).forEach(([color, player]) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(player.x, player.y, 20, 20); // Draw each player as a square
   });
 }
 
