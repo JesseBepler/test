@@ -13,23 +13,23 @@ const ctx = canvas.getContext('2d');
 const nameInput = document.getElementById('player-name');
 const playerList = document.getElementById('player-list');
 
-let terrain = []; // Terrain data
+let terrain = [];
 let powerUps = [];
 
 // Define a color sequence for the rainbow effect
 const rainbowColors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'];
 let colorIndex = 0;
 
-// Check if terrain data is received correctly
+// Receive terrain data from the server
 socket.on('terrain', (terrainData) => {
   terrain = terrainData;
-  console.log("Received terrain data:", terrain); // Debug log for terrain
+  console.log("Received terrain data:", terrain); // Debug to confirm terrain reception
 });
 
-// Check if power-ups data is received correctly
+// Receive power-up data from the server
 socket.on('powerUps', (powerUpData) => {
   powerUps = powerUpData;
-  console.log("Received power-ups data:", powerUps); // Debug log for power-ups
+  console.log("Received power-ups data:", powerUps); // Debug to confirm power-up reception
 });
 
 // Handle name input and spawn player
@@ -75,7 +75,7 @@ function drawPowerUps() {
 function drawPlayers() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  drawTerrain(); // Ensure terrain is drawn
+  drawTerrain(); // Draw terrain before other elements
   drawPowerUps();
 
   Object.values(gameState.players || {}).forEach((player) => {
@@ -111,9 +111,8 @@ socket.on('gameState', (state) => {
   drawPlayers();
 });
 
-// Movement variables and setInterval-based movement
+// Track movement keys and update movement
 const keysPressed = { w: false, a: false, s: false, d: false };
-
 setInterval(() => {
   movePlayer();
 }, 30);
