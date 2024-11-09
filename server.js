@@ -21,9 +21,38 @@ app.use(express.static(path.join(__dirname, '/')));
 io.on('connection', (socket) => {
   console.log('A user connected');
 
-  // Log and send the current game state to the newly connected client
-  console.log('Sending initial gameState to client:', JSON.stringify(gameState));
+  // Send the current game state to the newly connected client
   socket.emit('gameState', gameState);
+  console.log('Sending initial gameState to client:', JSON.stringify(gameState));
+
+  // Listen for a player claiming a character
+  socket.on('claimCharacter', ({ color, userId }) => {
+    console.log(`User ${userId} attempting to claim ${color} character`);
+
+    // Release any previously claimed character by this user
+    Object.keys(gameState.players).forEach(player => {
+      if (gameState.players[player].claimedBy === userId) {
+        gameState.players[player].claimedBy = null;
+      }
+    });
+
+    // Claim the character if it's not already claimed
+    if (gameState.players[color].claimedBy === null) {
+      gameState.players[color].claimedBy = userId;
+      console.log(`Character ${color} claimed by user ${userId}`);
+      io.emit('gameState', gameState); // Broadcast updated game state
+    }
+  });
+
+  // Listen for player movement
+  socket.on('move', ({ color, x, y }) => {
+    if (gameState.players[color]) {
+      gameState.players[color].x = x;
+      gameState.players[color].y = y;
+      console.log(`Updated position of ${color} player to (${x}, ${y})`);
+      io.emit('gameState', gameState); // Broadcast updated game state
+    }
+  });
 });
 
 server.listen(3000, () => {
